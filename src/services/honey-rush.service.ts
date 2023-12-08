@@ -11,7 +11,7 @@ interface ResultEachDrop {
   arrayWinPosition: Array<Array<number>>
   informationSlotWin: Array<{ length: number, value: number, wild?: number, haveWild: boolean, money: number }>
   money?: number
-  totalMoney?: number
+  totalMoney: number
   chainDropNew?: string
   totalSlotWinEachDrop: number
   event?: string
@@ -25,8 +25,13 @@ interface TypeEvents {
 }
 
 export const spinGame = async (money: number) => {
+  const arrayInit: number[] = []
+  for (let i = 0; i < 37; i++) {
+    arrayInit.push(getRandomElement(ICONS_POSITION_INDEX))
+  }
 
-  const arrayStart = "2,6,4,2,2,6,2,6,4,2,2,6,1,3,4,5,2,6,5,4,4,7,4,2,7,6,6,1,5,3,6,6,7,4,5,2,6"
+  const arrayStart = arrayInit.join(',')
+
   const ColonyEventCondition = [
     {
       point: 20,
@@ -52,7 +57,11 @@ export const spinGame = async (money: number) => {
 
   const result: ResultEachDrop[] = []
   startGame(arrayStart, result, money, ColonyEventCondition)
-  return result
+  const rtp = calculateRTP(result, money)
+  return {
+    rtp,
+    result
+  }
 }
 
 const startGame = (
@@ -83,7 +92,8 @@ const createNewGame = (arrayStart: string, result: ResultEachDrop[], money: numb
     arrayWinPosition: [],
     totalSlotWinEachDrop: 0,
     event: eventTrigger,
-    informationSlotWin: []
+    informationSlotWin: [],
+    totalMoney: 0
   }
 
   let arrayNumber = convertToArray(arrayStart)
@@ -102,7 +112,7 @@ const createNewGame = (arrayStart: string, result: ResultEachDrop[], money: numb
       resultEachDrop.informationSlotWin.push({
         length: chainIndexWin.length,
         value: value,
-        wild: resultCalculateWilds.totalChainWinMoney,
+        wild: resultCalculateWilds.chainWinInformation,
         haveWild: resultCalculateWilds.haveWild,
         money: resultCalculateWilds.totalChainWinMoney
       })
@@ -234,10 +244,8 @@ const randomSlotForEventDrone = (array: string, pointTrigger: number): number =>
 
 const calculateWilds = (chainIndexWin: number[], array: number[], money: number, value: number) => {
   let chainWinInformation = chainIndexWin.reduce((total, item) => {
-    return WILDS.includes(array[item - 1]) ? total * array[item - 1] : total
+    return WILDS.includes(array[item - 1]) ? total * array[item - 1] / 100 : total
   }, 1)
-
-  chainWinInformation = chainWinInformation != 1 ? chainWinInformation / 100 : 1
 
   const haveWild = chainIndexWin.some(index => WILDS.includes(array[index - 1]))
 
@@ -258,5 +266,17 @@ const calculateTotalMoneySpin = (result: ResultEachDrop[]) => {
       }, 0)
       return total + totalMoney
     }
+    return total
   }, 0)
+}
+
+const getRandomElement = (arr: number[]): number => {
+  const randomIndex = Math.floor(Math.random() * arr.length);
+  return arr[randomIndex];
+}
+
+const calculateRTP = (result: ResultEachDrop[], money: number) => {
+  return result[result.length - 1].totalMoney != 0
+    ? result[result.length - 1].totalMoney / money * 100
+    : 0
 }

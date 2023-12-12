@@ -1,8 +1,8 @@
-import { WILDS, ICONS_POSITION_INDEX, DIMENSION_ICON_GAME } from "@/utils/constants"
+import { WILDS, ICONS_POSITION_INDEX, DIMENSION_ICON_GAME, lengthSubsArray } from "@/utils/constants"
 import { randomNumber, convertToArray, getChainWinEachDrop, markSlotWin, randomPosition } from "@/utils"
 import { calculateMoney } from "@/utils/calculateMoney"
 import { droneColony } from "@/events/honey-rush/drone"
-
+import { randomSuiteGame } from "@/utils/randomSuitNumber"
 // task 2: tính tiền
 interface ResultEachDrop {
   arrayStart: string
@@ -24,13 +24,22 @@ interface TypeEvents {
   type: string
 }
 
-export const spinGame = async (money: number) => {
-  const arrayInit: number[] = []
+export const spinGame = async (suits: any) => {
+  const money = 100
+  // generate array start
+  const arrayInit: any[] = []
+
+  suits.forEach((suit: any, index: number) => {
+    const suiteArray = convertToArray(suit)
+    arrayInit.push(randomSuiteGame(suiteArray, lengthSubsArray[index]))
+  })
+
+  const arrayStart = arrayInit.join(',')
+
+  // end generate array start
   for (let i = 0; i < 37; i++) {
     arrayInit.push(getRandomElement(ICONS_POSITION_INDEX))
   }
-
-  const arrayStart = arrayInit.join(',')
 
   const ColonyEventCondition = [
     {

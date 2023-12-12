@@ -8,3 +8,9 @@ export const createGameHoneyRush = async (req: Request, res: Response, next: Nex
 
   return dataGame ? res.send(dataGame) : res.status(400).send({ message: 'Create resource fail !' })
 }
+
+export const spinGameHoneyRush = async (req: Request, res: Response, next: NextFunction) => {
+  const dataGame = await spinGame(req.body)
+
+  return dataGame ? res.send(dataGame) : res.status(400).send({ message: 'Create resource fail !' })
+}
